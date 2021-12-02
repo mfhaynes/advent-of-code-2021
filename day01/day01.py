@@ -2,7 +2,7 @@ import sys
 
 def read_data (filename, cast_to_int):
     with open(filename) as f:
-        if cast_to_int:
+        if cast_to_int is True:
             data = [int(line.strip()) for line in f.readlines()]
         else:
             data = [line.strip() for line in f.readlines()]

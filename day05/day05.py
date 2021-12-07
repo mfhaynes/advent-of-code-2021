@@ -69,9 +69,7 @@ def step_2 (data):
             else:
                 slope = -1
             for offset in range(length+1):
-                    #print(coord1.y + (slope * offset))
-                    #print(coord1.x + offset)
-                    grid[coord1.y + (slope * offset)][coord1.x + offset] += 1               
+                grid[coord1.y + (slope * offset)][coord1.x + offset] += 1               
     for row in grid:
         danger_zones += len([column for column in row if column > 1])
     return danger_zones

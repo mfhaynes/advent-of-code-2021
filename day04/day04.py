@@ -1,11 +1,8 @@
 import sys
 
-def read_data (filename, cast_to_int):
+def read_data (filename):
     with open(filename) as f:
-        if cast_to_int is True:
-            data = [int(line.strip()) for line in f.readlines()]
-        else:
-            data = [line.strip() for line in f.readlines()]
+        data = [line.strip() for line in f.readlines()]
     return data
 
 def convert_list_to_ints (data):
@@ -16,7 +13,6 @@ def parse_data (data):
     start_row = 2
     boards = []
     pivoted_boards = []
-    winning_board = []
     while start_row + 5 <= len(data):
         new_board = [convert_list_to_ints(row.split()) for row in data[start_row:start_row+5]]
         boards.append(new_board)
@@ -24,55 +20,46 @@ def parse_data (data):
         start_row = start_row + 6
     return draws, boards, pivoted_boards
     
-def check_victory (boards):    
-    winning_boards = []
-    winning_board_details = []
-    counter = 0
-    for board in boards:
-       winning_boards.append(0)
-       for row in board:
-           if row == []:
-               winning_board_details.append(board)
-               winning_boards[counter] = 1
-               break
-       counter = counter + 1       
-    return winning_boards, winning_board_details
-    
 def mark_boards (boards, draw):    
     return [[[column for column in row if column != draw] for row in board] for board in boards]
+    
+def check_victory (boards):    
+    winning_boards = [0 for i in range(len(boards))]
+    winning_board_details = []
+    for boardkey in range(len(boards)):
+       for row in boards[boardkey]:
+           if row == []:
+               winning_board_details.append(boards[boardkey])
+               winning_boards[boardkey] = 1
+               break 
+    return winning_boards, winning_board_details
     
 def step_1 (data):
     draws, boards, pivoted_boards = parse_data(data)
     for draw in draws:
         boards = mark_boards(boards, draw)
         pivoted_boards = mark_boards(pivoted_boards, draw)
-        winning_boards = check_victory(boards)[1]
+        winning_boards = check_victory(boards+pivoted_boards)[1]
         if winning_boards != []:
-            break
-        else:
-            winning_boards = check_victory(pivoted_boards)[1]
-        if winning_boards != []:
-            break                                   
-    return draw*sum([sum(row) for row in (winning_boards)[0]])
+            break                              
+    return draw*sum([sum(row) for row in winning_boards[0]])
 
 def step_2 (data):
     draws, boards, pivoted_boards = parse_data(data)
-    board_count = len(boards)
     losing_boards = []
     for draw in draws:
         previous_losing_boards = list(losing_boards)
         boards = mark_boards(boards, draw)
         pivoted_boards = mark_boards(pivoted_boards, draw)
-        winning_boards, winning_board_details = check_victory(boards)
-        winning_pivoted_boards, winning_pivoted_board_details = check_victory(pivoted_boards)
+        winning_boards = check_victory(boards)[0]
+        winning_pivoted_boards = check_victory(pivoted_boards)[0]
         losing_boards = [boards[counter] for counter in range(len(boards)) if winning_boards[counter] + winning_pivoted_boards[counter] == 0]
         if losing_boards == []:
             break
     return draw*sum([sum([value for value in row if value != draw]) for row in previous_losing_boards[0]])  
 
 if __name__ == '__main__':
-    data = read_data(sys.argv[1], sys.argv[3])
-    results = ''
+    data = read_data(sys.argv[1])
     if sys.argv[2] == '1':
         results = step_1(data)
     else:
